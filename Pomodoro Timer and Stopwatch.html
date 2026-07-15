@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Timekeeping & Analytics Suite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #030712;
+            --bg-surface: #0b1329;
+            --border-color: #1e293b;
+            --border-hover: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --color-accent: #6366f1;
+            --color-accent-hover: #4f46e5;
+            --color-success: #10b981;
+            --color-success-hover: #059669;
+            --color-warning: #f59e0b;
+            --color-warning-hover: #d97706;
+            --color-danger: #ef4444;
+            --color-danger-hover: #dc2626;
+            --color-disabled: #1e293b;
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-snappy: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.theme-emerald {
+            --bg-primary: #022c22;
+            --bg-surface: #064e3b;
+            --border-color: #065f46;
+            --border-hover: #047857;
+            --text-primary: #ecfdf5;
+            --text-secondary: #a7f3d0;
+            --color-accent: #34d399;
+            --color-accent-hover: #059669;
+        }
+
+        body.theme-amber {
+            --bg-primary: #1c1917;
+            --bg-surface: #292524;
+            --border-color: #44403c;
+            --border-hover: #57534e;
+            --text-primary: #fafaf9;
+            --text-secondary: #fde047;
+            --color-accent: #fbbf24;
+            --color-accent-hover: #d97706;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 24px;
+            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 1024px) {
+            .workspace-grid {
+                grid-template-columns: 1.2fr 0.8fr;
+            }
+        }
+
+        .app-panel, .stats-panel {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 40px rgba(0, 0, 0, 0.2);
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .app-panel:hover, .stats-panel:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 60px rgba(99, 102, 241, 0.03);
+        }
+
+        .config-block {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px 24px;
+            margin-bottom: 32px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(8px);
+        }
+
+        .config-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .config-group select {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            outline: none;
+            font-weight: 500;
+            transition: var(--transition-snappy);
+        }
+
+        .config-group select:focus {
+            border-color: var(--color-accent);
+        }
+
+        .tab-navigation {
+            display: flex;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 6px;
+            border-radius: 14px;
+            margin-bottom: 32px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            padding: 14px 0;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .tab-btn.active {
+            background-color: var(--color-accent);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 400px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .panel-header h2 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-secondary);
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: rgba(156, 163, 175, 0.08);
+            color: var(--text-secondary);
+            font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            transition: var(--transition-smooth);
+        }
+
+        .status-badge.running {
+            background: rgba(16, 185, 129, 0.08);
+            color: var(--color-success);
+            border-color: rgba(16, 185, 129, 0.15);
+        }
+
+        .status-badge.paused {
+            background: rgba(245, 158, 11, 0.08);
+            color: var(--color-warning);
+            border-color: rgba(245, 158, 11, 0.15);
+        }
+
+        .display-container {
+            padding: 40px 0;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        .time-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 4.75rem;
+            color: var(--text-primary);
+            letter-spacing: -1px;
+            transition: var(--transition-smooth);
+        }
+
+        .time-display span.ms {
+            font-size: 2.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: auto;
+        }
+
+        button.action-btn {
+            font-size: 0.9rem;
+            font-weight: 700;
+            padding: 16px 0;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.04);
+            color: var(--text-primary);
+            transition: var(--transition-snappy);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        button.action-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        button.action-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        #startBtn, #timerStartBtn {
+            background-color: var(--color-success);
+            color: #030712;
+        }
+
+        #startBtn:hover:not(:disabled), #timerStartBtn:hover:not(:disabled) {
+            background-color: var(--color-success-hover);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        #pauseBtn, #timerPauseBtn {
+            background-color: var(--color-warning);
+            color: #030712;
+        }
+
+        #pauseBtn:hover:not(:disabled), #timerPauseBtn:hover:not(:disabled) {
+            background-color: var(--color-warning-hover);
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+        }
+
+        #lapBtn {
+            background-color: transparent;
+            border-color: var(--border-color);
+        }
+
+        #lapBtn:hover:not(:disabled) {
+            border-color: var(--text-secondary);
+        }
+
+        #resetBtn, #timerResetBtn {
+            background-color: transparent;
+            border-color: rgba(239, 68, 68, 0.2);
+            color: var(--color-danger);
+        }
+
+        #resetBtn:hover:not(:disabled), #timerResetBtn:hover:not(:disabled) {
+            background-color: rgba(239, 68, 68, 0.06);
+            border-color: var(--color-danger);
+        }
+
+        button:disabled {
+            background-color: var(--color-disabled) !important;
+            border-color: transparent !important;
+            color: #475569 !important;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+            opacity: 0.6;
+        }
+
+        .timer-setup {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            padding: 40px 0;
+            flex-grow: 1;
+        }
+
+        .timer-setup input {
+            width: 90px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.25rem;
+            text-align: center;
+            padding: 12px;
+            border-radius: 12px;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+
+        .timer-setup input:focus {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 16px rgba(99, 102, 241, 0.15);
+        }
+
+        .lap-module {
+            border-top: 1px solid var(--border-color);
+            padding-top: 24px;
+            margin-top: 32px;
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .lap-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .lap-table th {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            padding-bottom: 16px;
+            text-align: left;
+            letter-spacing: 1px;
+        }
+
+        .lap-table-wrapper {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .lap-table td {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .row-split {
+            color: var(--color-accent);
+        }
+
+        .stats-panel h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            transition: var(--transition-smooth);
+        }
+
+        .stat-card:hover {
+            border-color: var(--border-hover);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .session-log {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .session-log-header {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .log-list {
+            list-style: none;
+            max-height: 240px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+            padding: 8px 16px;
+            flex-grow: 1;
+        }
+
+        .log-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .log-item:last-child {
+            border-bottom: none;
+        }
+
+        .clear-stats-btn {
+            background: transparent;
+            border: 1px solid var(--color-danger);
+            color: var(--color-danger);
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 24px;
+            align-self: flex-start;
+            transition: var(--transition-snappy);
+        }
+
+        .clear-stats-btn:hover {
+            background: rgba(239, 68, 68, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .log-list::-webkit-scrollbar, .lap-table-wrapper::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .log-list::-webkit-scrollbar-thumb, .lap-table-wrapper::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="workspace-grid">
+        
+        <div class="app-panel">
+            
+            <div class="config-block">
+                <div class="config-group">
+                    <label for="themeSelect">Suite Theme</label>
+                    <select id="themeSelect" onchange="applyTheme(this.value)">
+                        <option value="default">Neon Slate</option>
+                        <option value="theme-emerald">Emerald Minimalist</option>
+                        <option value="theme-amber">Cyber Amber</option>
+                    </select>
+                </div>
+                <div class="config-group">
+                    <label for="precisionSelect">Visual Precision</label>
+                    <select id="precisionSelect" onchange="togglePrecision(this.value)">
+                        <option value="centiseconds">Milliseconds (.00)</option>
+                        <option value="seconds">Seconds Only</option>
+                    </select>
+                </div>
+            </div>
+
+            <nav class="tab-navigation">
+                <button class="tab-btn active" onclick="switchTab('stopwatch-tab')">Stopwatch Engine</button>
+                <button class="tab-btn" onclick="switchTab('timer-tab')">Countdown Engine</button>
+            </nav>
+
+            <div id="stopwatch-tab" class="tab-content active">
+                <div class="panel-header">
+                    <h2>Stopwatch</h2>
+                    <div class="status-badge" id="swStatus">Ready</div>
+                </div>
+                <div class="display-container">
+                    <div class="time-display" id="swDisplay">00:00:00<span class="ms">.00</span></div>
+                </div>
+                <div class="action-grid">
+                    <button class="action-btn" id="startBtn">Start</button>
+                    <button class="action-btn" id="pauseBtn" disabled>Pause</button>
+                    <button class="action-btn" id="lapBtn" disabled>Lap</button>
+                    <button class="action-btn" id="resetBtn">Reset</button>
+                </div>
+                <div class="lap-module" id="lapModule">
+                    <table class="lap-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%;">Lap</th>
+                                <th style="width: 40%;">Split Delta</th>
+                                <th style="width: 40%; text-align: right;">Total Duration</th>
+                            </tr>
+                        </thead>
+                    </table>
+                    <div class="lap-table-wrapper">
+                        <table class="lap-table" id="lapTableBody"></table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="timer-tab" class="tab-content">
+                <div class="panel-header">
+                    <h2>Countdown</h2>
+                    <div class="status-badge" id="timerStatus">Set Time</div>
+                </div>
+                <div id="timerInputContainer" class="timer-setup">
+                    <input type="number" id="inputHours" min="0" max="23" value="0">
+                    <span style="color:var(--text-secondary); font-weight: 700; font-size: 1.25rem;">h</span>
+                    <input type="number" id="inputMinutes" min="0" max="59" value="5">
+                    <span style="color:var(--text-secondary); font-weight: 700; font-size: 1.25rem;">m</span>
+                    <input type="number" id="inputSeconds" min="0" max="59" value="0">
+                    <span style="color:var(--text-secondary); font-weight: 700; font-size: 1.25rem;">s</span>
+                </div>
+                <div id="timerDisplayContainer" class="display-container" style="display: none;">
+                    <div class="time-display" id="timerDisplay">00:05:00</div>
+                </div>
+                <div class="action-grid">
+                    <button class="action-btn" id="timerStartBtn">Start</button>
+                    <button class="action-btn" id="timerPauseBtn" disabled>Pause</button>
+                    <button class="action-btn" style="visibility: hidden;"></button>
+                    <button class="action-btn" id="timerResetBtn">Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-panel">
+            <div>
+                <h3>Usage Analytics</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">Total SW Runtime</span>
+                        <div class="stat-value" id="statSwTime">0s</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Total Timer Runtime</span>
+                        <div class="stat-value" id="statTimerTime">0s</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Total Laps Marked</span>
+                        <div class="stat-value" id="statTotalLaps">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Total Run Cycles</span>
+                        <div class="stat-value" id="statTotalCycles">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="session-log">
+                <div class="session-log-header">
+                    <span>Recent Sessions Logs</span>
+                    <span id="logCount">0 records</span>
+                </div>
+                <ul class="log-list" id="logList"></ul>
+            </div>
+            <button class="clear-stats-btn" onclick="clearTelemetry()">Reset Metrics</button>
+        </div>
+    </div>
+
+    <script>
+        let activePrecision = 'centiseconds';
+        let stats = { swMs: 0, timerMs: 0, laps: 0, cycles: 0, log: [] };
+
+        if(localStorage.getItem('timeSuite_Stats')) {
+            stats = JSON.parse(localStorage.getItem('timeSuite_Stats'));
+        }
+        if(localStorage.getItem('timeSuite_Theme')) {
+            const savedTheme = localStorage.getItem('timeSuite_Theme');
+            document.getElementById('themeSelect').value = savedTheme;
+            applyTheme(savedTheme);
+        }
+
+        function applyTheme(className) {
+            document.body.className = '';
+            if (className !== 'default') document.body.classList.add(className);
+            localStorage.setItem('timeSuite_Theme', className);
+        }
+
+        function togglePrecision(mode) {
+            activePrecision = mode;
+            if (swInterval === null) updateSwDisplay(swElapsedTime);
+        }
+
+        function commitStats() {
+            localStorage.setItem('timeSuite_Stats', JSON.stringify(stats));
+            renderStatsUI();
+        }
+
+        function renderStatsUI() {
+            document.getElementById('statSwTime').textContent = Math.floor(stats.swMs / 1000) + 's';
+            document.getElementById('statTimerTime').textContent = Math.floor(stats.timerMs / 1000) + 's';
+            document.getElementById('statTotalLaps').textContent = stats.laps;
+            document.getElementById('statTotalCycles').textContent = stats.cycles;
+            document.getElementById('logCount').textContent = `${stats.log.length} records`;
+
+            const list = document.getElementById('logList');
+            list.innerHTML = '';
+            stats.log.slice().reverse().forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'log-item';
+                li.innerHTML = `<span>${item.type}</span> <span>${item.duration}</span>`;
+                list.appendChild(li);
+            });
+        }
+
+        function clearTelemetry() {
+            if(confirm("Flush all usage metrics and historical telemetry sheets?")) {
+                stats = { swMs: 0, timerMs: 0, laps: 0, cycles: 0, log: [] };
+                commitStats();
+            }
+        }
+
+        function appendLogRecord(type, durationMs) {
+            let secs = Math.floor(durationMs / 1000);
+            let formatted = secs >= 60 ? `${Math.floor(secs/60)}m ${secs%60}s` : `${secs}s`;
+            if(durationMs === 0) return;
+            
+            stats.log.push({ type: type, duration: formatted });
+            if(stats.log.length > 30) stats.log.shift();
+            commitStats();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        const swDisplay = document.getElementById('swDisplay');
+        const swStatus = document.getElementById('swStatus');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const lapBtn = document.getElementById('lapBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const lapModule = document.getElementById('lapModule');
+        const lapTableBody = document.getElementById('lapTableBody');
+
+        let swStartTime = 0, swElapsedTime = 0, lastLapTime = 0, swCount = 0, swSessionAccumulator = 0;
+        let swInterval = null;
+
+        function formatTimeStrings(ms) {
+            let hours = Math.floor(ms / 3600000);
+            let minutes = Math.floor((ms % 3600000) / 60000);
+            let seconds = Math.floor((ms % 60000) / 1000);
+            let centiseconds = Math.floor((ms % 1000) / 10);
+            
+            const base = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            const msStr = `.${String(centiseconds).padStart(2, '0')}`;
+            return { base, msStr };
+        }
+
+        function updateSwDisplay(ms) {
+            const t = formatTimeStrings(ms);
+            if(activePrecision === 'centiseconds') {
+                swDisplay.innerHTML = `${t.base}<span class="ms">${t.msStr}</span>`;
+            } else {
+                swDisplay.innerHTML = t.base;
+            }
+        }
+
+        startBtn.addEventListener('click', () => {
+            swStartTime = Date.now() - swElapsedTime;
+            let lastTick = Date.now();
+            
+            swInterval = setInterval(() => {
+                const now = Date.now();
+                const delta = now - lastTick;
+                lastTick = now;
+
+                swElapsedTime = now - swStartTime;
+                swSessionAccumulator += delta;
+                stats.swMs += delta;
+                
+                updateSwDisplay(swElapsedTime);
+            }, 35);
+
+            swStatus.textContent = "Running";
+            swStatus.className = "status-badge running";
+            stats.cycles++;
+            commitStats();
+
+            startBtn.disabled = true; pauseBtn.disabled = false; lapBtn.disabled = false;
+        });
+
+        pauseBtn.addEventListener('click', () => {
+            clearInterval(swInterval);
+            swInterval = null;
+            swStatus.textContent = "Paused";
+            swStatus.className = "status-badge paused";
+            startBtn.disabled = false; pauseBtn.disabled = true; lapBtn.disabled = true;
+            commitStats();
+        });
+
+        resetBtn.addEventListener('click', () => {
+            clearInterval(swInterval);
+            swInterval = null;
+            appendLogRecord('Stopwatch Run', swSessionAccumulator);
+            
+            swElapsedTime = 0; lastLapTime = 0; swCount = 0; swSessionAccumulator = 0;
+            updateSwDisplay(0);
+            lapTableBody.innerHTML = "";
+            lapModule.style.display = "none";
+            swStatus.textContent = "Ready";
+            swStatus.className = "status-badge";
+            
+            startBtn.disabled = false; pauseBtn.disabled = true; lapBtn.disabled = true;
+        });
+
+        lapBtn.addEventListener('click', () => {
+            swCount++;
+            stats.laps++;
+            if (swCount === 1) lapModule.style.display = "block";
+            
+            const lapCurrent = swElapsedTime - lastLapTime;
+            lastLapTime = swElapsedTime;
+            
+            const split = formatTimeStrings(lapCurrent);
+            const total = formatTimeStrings(swElapsedTime);
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td style="width: 20%;">#${String(swCount).padStart(2, '0')}</td>
+                <td style="width: 40%;" class="row-split">${split.base}${split.msStr}</td>
+                <td style="width: 40%; text-align: right;">${total.base}${total.msStr}</td>
+            `;
+            lapTableBody.insertBefore(row, lapTableBody.firstChild);
+            commitStats();
+        });
+
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerStatus = document.getElementById('timerStatus');
+        const timerStartBtn = document.getElementById('timerStartBtn');
+        const timerPauseBtn = document.getElementById('timerPauseBtn');
+        const timerResetBtn = document.getElementById('timerResetBtn');
+        const timerInputContainer = document.getElementById('timerInputContainer');
+        const timerDisplayContainer = document.getElementById('timerDisplayContainer');
+
+        let timerRemainingTime = 0, timerSessionTotal = 0, timerInitialWindow = 0;
+        let timerInterval = null;
+
+        function formatTimerString(totalSeconds) {
+            let hrs = Math.floor(totalSeconds / 3600);
+            let mins = Math.floor((totalSeconds % 3600) / 60);
+            let secs = totalSeconds % 60;
+            return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        timerStartBtn.addEventListener('click', () => {
+            if (!timerInterval && timerRemainingTime === 0) {
+                const h = parseInt(document.getElementById('inputHours').value) || 0;
+                const m = parseInt(document.getElementById('inputMinutes').value) || 0;
+                const s = parseInt(document.getElementById('inputSeconds').value) || 0;
+                
+                timerRemainingTime = (h * 3600) + (m * 60) + s;
+                timerInitialWindow = timerRemainingTime;
+                if (timerRemainingTime <= 0) return alert("Define baseline countdown targets.");
+            }
+
+            timerInputContainer.style.display = "none";
+            timerDisplayContainer.style.display = "block";
+            timerDisplay.textContent = formatTimerString(timerRemainingTime);
+
+            stats.cycles++;
+            commitStats();
+
+            timerInterval = setInterval(() => {
+                timerRemainingTime--;
+                timerSessionTotal++;
+                stats.timerMs += 1000;
+                
+                timerDisplay.textContent = formatTimerString(timerRemainingTime);
+                
+                if(timerSessionTotal % 5 === 0) commitStats();
+
+                if (timerRemainingTime <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    appendLogRecord('Timer Window', timerInitialWindow * 1000);
+                    alert("System Notification: Timer Threshold Reached.");
+                    resetTimerUI();
+                }
+            }, 1000);
+
+            timerStatus.textContent = "Counting";
+            timerStatus.className = "status-badge running";
+            timerStartBtn.disabled = true; timerPauseBtn.disabled = false;
+        });
+
+        timerPauseBtn.addEventListener('click', () => {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerStatus.textContent = "Paused";
+            timerStatus.className = "status-badge paused";
+            timerStartBtn.disabled = false; timerPauseBtn.disabled = true;
+            commitStats();
+        });
+
+        function resetTimerUI() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            if(timerRemainingTime > 0 && timerRemainingTime !== timerInitialWindow) {
+                appendLogRecord('Partial Timer', timerSessionTotal * 1000);
+            }
+            timerRemainingTime = 0; timerSessionTotal = 0;
+            timerInputContainer.style.display = "flex";
+            timerDisplayContainer.style.display = "none";
+            timerStatus.textContent = "Set Time";
+            timerStatus.className = "status-badge";
+            timerStartBtn.disabled = false; timerPauseBtn.disabled = true;
+            commitStats();
+        }
+
+        timerResetBtn.addEventListener('click', resetTimerUI);
+
+        renderStatsUI();
+    </script>
+</body>
+</html>
